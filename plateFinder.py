@@ -113,6 +113,7 @@ class PlateFinder(threading.Thread):
     self.video_source = video_source
     self.video_out = None
     self.threadName = threadName
+    self.frameCounter = 0
 
     print("[INFO] Loading Model. . .")
     self.model = self.loadModel(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
@@ -149,8 +150,8 @@ class PlateFinder(threading.Thread):
       device = torch.device(0)
       self.model.to(device)
 
-    self.model.conf = 0.70 # NMS confidence threshold
-    self.model.iou = 0.70 # NMS IoU threshold
+    self.model.conf = 0.65 # NMS confidence threshold
+    self.model.iou = 0.45 # NMS IoU threshold
     #classes = self.model.names
 
     cap = cv2.VideoCapture(self.video_source)
@@ -158,39 +159,41 @@ class PlateFinder(threading.Thread):
     # Writing to a video
     # Default resolutions
     # Convert the default resolutions from float to integer.
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    framerate = int(cap.get(cv2.CAP_PROP_FPS)) # or 30,20,10 ...
     if self.video_out is not None: 
-      frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-      frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
       codec = cv2.VideoWriter_fourcc(*'mp4v')
-      framerate = int(cap.get(cv2.CAP_PROP_FPS)) # or 30,20,10 ...
       resolution = (frame_width, frame_height)
       frame_Output = cv2.VideoWriter(self.video_out, codec, framerate, resolution)
 
     while cap.isOpened():
       ret, frame = cap.read()
       if ret == True:
-          # Make Detection
-          result, labels, cordinates = self.detection(frame, self.model)
-          
-          #if(len(labels) != 0):
-              #image_to_text(frame, labels, cordinates)
-
+        # Make Detection
+        result, labels, cordinates = self.detection(frame, self.model)
+        
+        if(len(labels) != 0):
           for i in range(len(labels)):
-              x_min, y_min, x_max, y_max = int(cordinates[i][0]), int(cordinates[i][1]), int(cordinates[i][2]), int(cordinates[i][3])
-              temp_frame = frame[y_min:y_max, x_min:x_max]
+            x_min, y_min, x_max, y_max = int(cordinates[i][0]), int(cordinates[i][1]), int(cordinates[i][2]), int(cordinates[i][3])
+            temp_frame = frame[y_min:y_max, x_min:x_max]
+            print(temp_frame.size , "       ", temp_frame.shape)
+            if temp_frame.shape[0] > frame_height/12 and temp_frame.shape[1] > frame_width/8:
+              cv2.imwrite(f"rec/test{self.counter}.png", temp_frame)
           
-          # Show Frame
-          cv2.imshow('Video Out', np.squeeze(result.render()))
-          
-          if self.video_out is not None:
-              print(f"[INFO] Saving output video. . .")
-              frame_Output.write(result)
+        # Show Frame
+        cv2.imshow('Video Out', np.squeeze(result.render()))
+        
+        if self.video_out is not None:
+          print(f"[INFO] Saving output video. . .")
+          frame_Output.write(result)
 
-          if cv2.waitKey(10) & 0xFF == ord('q'):
-              print("[INFO] Camera Turns Off. . .")
-              break
-      else:
+        if cv2.waitKey(10) & 0xFF == ord('q'):
+          print("[INFO] Camera Turns Off. . .")
           break
+      else:
+        print("[ERROR INFO] Failed to capture frame")
+        break
     
     cap.release()
     cv2.destroyAllWindows()
