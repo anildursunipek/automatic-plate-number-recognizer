@@ -8,53 +8,70 @@ class PlateFinder(threading.Thread):
   """
   """
   def __init__(self, threadName: str):
-    """
-    """
     threading.Thread.__init__(self) 
+    video_out = None
     self.threadName = threadName
     print("[INFO] Loading Model. . .")
-    self.model = torch.hub.load("yolov5", 'custom', source ='local', path='best.pt', force_reload=True)
+    self.model = self.loadModel(yolov5Path= "yolov5", customWeightsPath= "yolovt/best.py")
+    
+  def run(self, video_source):
+    """
+    """
+    self.startDetection()
 
-  def run(self, video_source, video_out = None):
+  def loadModel(self, yolov5Path, customWeightsPath):
     """
+    This function loads the yolov5 model.
+
+    Parameters:
+      yolov5Path(string) = Path of the yolov5 files.
+      customWeightPath(string) = Path of custom weights adress 
+    
+    Returns:
+      A pytorch model which is loading custom weights.
     """
+    return torch.hub.load(yolov5Path, 'custom', source= 'local', path= customWeightsPath, force_reload=True)
+  
+  def startDetection(self):
     if torch.cuda.is_available():
       device = torch.device(0)
       self.model.to(device)
 
     self.model.conf = 0.45 # NMS confidence threshold
     self.model.iou = 0.5 # NMS IoU threshold
-    classes = self.model.names
+    #classes = self.model.names
 
-    cap = cv2.VideoCapture(video_source)
+    cap = cv2.VideoCapture(self.video_source)
 
     # Writing to a video
     # Default resolutions
     # Convert the default resolutions from float to integer.
-    if video_out is not None: 
+    if self.video_out is not None: 
       frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
       frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
       codec = cv2.VideoWriter_fourcc(*'mp4v')
       framerate = int(cap.get(cv2.CAP_PROP_FPS)) # or 30,20,10 ...
       resolution = (frame_width, frame_height)
-      frame_Output = cv2.VideoWriter(video_out, codec, framerate, resolution)
+      frame_Output = cv2.VideoWriter(self.video_out, codec, framerate, resolution)
 
     while cap.isOpened():
       ret, frame = cap.read()
       if ret == True:
           # Make Detection
           result, labels, cordinates = self.detection(frame)
+          
           #if(len(labels) != 0):
               #image_to_text(frame, labels, cordinates)
-          counter = 0
+
           for i in range(len(labels)):
               x_min, y_min, x_max, y_max = int(cordinates[i][0]), int(cordinates[i][1]), int(cordinates[i][2]), int(cordinates[i][3])
               temp_frame = frame[y_min:y_max, x_min:x_max]
+          
           # Show Frame
           cv2.imshow('Video Out', np.squeeze(result.render()))
           
-          if vid_out is not None:
-              #print(f"[INFO] Saving output video. . .")
+          if self.video_out is not None:
+              print(f"[INFO] Saving output video. . .")
               frame_Output.write(result)
 
           if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -85,13 +102,9 @@ class PlateFinder(threading.Thread):
 
 if __name__ == '__main__':
   thread = PlateFinder("Thread - 1")
-  thread2 = PlateFinder("Thread - 2")
-
   thread.start()
-  thread2.start()
-
   thread.join()
-  thread2.join()
+
 
 
 
