@@ -5,6 +5,7 @@ Steps
 - Yeni python env oluşturuldu
 - Yolov5 modeli implement edildi
 - Yolov5 requirements.txt içerisindeki kütüphaneler pip ile mevcut python ortamına yüklendi
+- pip install -qr requirements.txt 
 - plateFinder.py içerisinde PlateFinder class'ı oluşturuldu ve threading kütüphanesi içerisinden threading.Thread class'ı miras bırakılarak yeni bir class oluşturuldu.
 - PlateFinder class'ının içerisinde startDetection ve detection method'ları eklendi.
 - Torch'un cpu ile çalıştığı tespit edildi.
