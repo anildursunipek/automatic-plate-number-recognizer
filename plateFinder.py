@@ -3,6 +3,7 @@ import torch
 import cv2
 import numpy as np
 from datetime import datetime
+import time
 
 class PlateFinder(threading.Thread):  
   """
@@ -60,6 +61,7 @@ class PlateFinder(threading.Thread):
     self.frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     self.frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     self.framerate = int(cap.get(cv2.CAP_PROP_FPS)) # or 30,20,10 ...
+    
     if self.video_out is not None: 
       codec = cv2.VideoWriter_fourcc(*'mp4v')
       resolution = (self.frame_width, self.frame_height)
@@ -74,7 +76,6 @@ class PlateFinder(threading.Thread):
           
         # Show Frame
         cv2.imshow('Video Out', np.squeeze(resultFrame.render()))
-        
         if self.video_out is not None:
           print(f"[INFO] Saving output video. . .")
           frame_Output.write(resultFrame)
@@ -90,25 +91,63 @@ class PlateFinder(threading.Thread):
     cv2.destroyAllWindows()
 
   def save_plate(self,frame, labels, cordinates ,take_photo):
+    """
+    Function description
+
+    Parameters:
+      labels:
+      cordinates:
+      take_photo:
+
+    returns(void)
+    """
     if take_photo and len(labels) != 0:
       for self.idx, plateIndex in enumerate(range(len(labels))):
         x_min, y_min, x_max, y_max = int(cordinates[plateIndex][0]), int(cordinates[plateIndex][1]), int(cordinates[plateIndex][2]), int(cordinates[plateIndex][3])
-        plateFrame = frame[y_min:y_max, x_min:x_max]  
+        plateFrame = frame[y_min+5:y_max+5, x_min+5:x_max+5]  
+
         if plateFrame.shape[0] > self.frame_height/12 and plateFrame.shape[1] > self.frame_width/8:
           self.now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
           obj_filename = f'''{self.now}-{self.idx}'''
           obj_path = f'''./detected/{obj_filename}.png'''
           cv2.imwrite(f'''{obj_path}''', plateFrame)
+          self.image_to_text(obj_path)
 
   def take_snapshot(self):
+    """
+    Function description
+    ...
+    returns(void)
+    """
+    time.sleep(1)
     print("Take snapshot init")
     self.save_plate(frame, labels, cordinates, True)
     thread = threading.Timer(3.0, self.take_snapshot)
     thread.daemon = True
     thread.start()
+  
+  def image_to_text(self, plate_image_path:str):
+    """
+    Function description
+    ...
+    returns(void)
+    """
+    print("Image to text init")
 
   def detection(self, frame, model):
     """ 
+    Function description
+    ...
+    Parameters:
+      result:
+      labels:
+      cordinates:
+
+    Returns:
+      result:
+      labels:
+      cordinates:
+
     Example
     -------
     print(result.xyxyn[0])
@@ -125,16 +164,10 @@ class PlateFinder(threading.Thread):
 
 
 if __name__ == '__main__':
-
   # Test Code
   thread = PlateFinder("Thread - 1", 0)
   thread.start()
   thread.join()
-
-  # Test Code
-  # thread_1 = threading.Thread(target= startDetection, args=(0,))
-  # thread_1.start()
-  # thread_1.join()
 
 
 
