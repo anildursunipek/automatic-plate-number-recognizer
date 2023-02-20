@@ -1,5 +1,5 @@
 # automatic-plate-number-recognizer
------------------------------------------
+-----------------------------------
 Steps
 -----
 - Yeni python env oluşturuldu
@@ -8,8 +8,8 @@ Steps
 - pip install -qr requirements.txt 
 - plateFinder.py içerisinde PlateFinder class'ı oluşturuldu ve threading kütüphanesi içerisinden threading.Thread class'ı miras bırakılarak yeni bir class oluşturuldu.
 - PlateFinder class'ının içerisinde startDetection ve detection method'ları eklendi.
-- Torch'un cpu ile çalıştığı tespit edildi.
-- Torch, torchvision ve torchaudio kaldırıldı ve pytorch'un sitesinden tekrar pip ile kurulumu yapıldı.
+- Torch'un cpu ile çalıştığı tespit edildi. Torch, torchvision ve torchaudio kaldırıldı ve pytorch'un sitesinden tekrar pip ile kurulumu yapıldı. Gpu çalışması aktif edildi.
+- save_plate ve take_snapshot metodları eklendi. Threading kullanılarak tespit edilen plate'lerin her 3 saniyede bir detection klasörüne kayıt edilmesi sağlandı. Threading.Timer methodu kullanıldı.
 
 
 
@@ -26,3 +26,7 @@ Plate Dataset
 General Links
 -------------
 - Torch gpu kurulum linki(mevcut kullanılan sürüm cuda 11.6) -> https://pytorch.org/get-started/locally/ 
+
+Helpful Links
+-------------
+- https://www.youtube.com/watch?v=6xklN4iiA0Q&ab_channel=Edgecate -> Plakaların belirli sürelerde nasıl kayıt edileceği ve open alpr gibi faydalı içeriklerin bulunduğu video.
