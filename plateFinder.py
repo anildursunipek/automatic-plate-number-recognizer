@@ -15,9 +15,9 @@ class PlateFinder(threading.Thread):
     self.threadName = threadName
     print("[INFO] Loading Model. . .")
     self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
-    self.model.conf = 0.65 # NMS confidence threshold
-    self.model.iou = 0.45 # NMS IoU threshold
-    threading.Timer(3.0, self.take_snapshot).start()
+    self.model.conf = 0.50 # NMS confidence threshold
+    self.model.iou = 0.50 # NMS IoU threshold
+    threading.Timer(5.0, self.take_snapshot).start()
     
   def run(self):
     """
@@ -72,7 +72,7 @@ class PlateFinder(threading.Thread):
       if succes:
         cv2_im = frame
         resultFrame, labels, cordinates = self.detection(cv2_im, self.model)
-        self.save_plate(frame, labels,cordinates, False)
+        #self.save_plate(frame, labels,cordinates, False)
           
         # Show Frame
         cv2.imshow('Video Out', np.squeeze(resultFrame.render()))
@@ -90,7 +90,7 @@ class PlateFinder(threading.Thread):
     cap.release()
     cv2.destroyAllWindows()
 
-  def save_plate(self,frame, labels, cordinates ,take_photo):
+  def save_plate(self, frame, labels, cordinates, take_photo):
     """
     Function description
 
@@ -119,10 +119,9 @@ class PlateFinder(threading.Thread):
     ...
     returns(void)
     """
-    time.sleep(1)
     print("Take snapshot init")
     self.save_plate(frame, labels, cordinates, True)
-    thread = threading.Timer(3.0, self.take_snapshot)
+    thread = threading.Timer(1.0, self.take_snapshot)
     thread.daemon = True
     thread.start()
   
