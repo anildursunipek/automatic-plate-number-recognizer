@@ -14,6 +14,7 @@ class PlateFinder(threading.Thread):
     threading.Thread.__init__(self) 
     self.video_source = video_source
     self.threadName = threadName
+    self.video_out = video_out
     print("[INFO] Loading Model. . .")
     self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
     self.model.conf = 0.50 # NMS confidence threshold
