@@ -1,5 +1,12 @@
 # automatic-plate-number-recognizer
 -----------------------------------
+Setup
+-----
+- pip install -qr requirements.txt 
+- Tensorflow gpu kurulumu
+- keras-ocr kurulumu
+- Keras için tensorflow=>2 ve üstü sürümler kullanılabilir
+
 Steps
 -----
 - Yeni python env oluşturuldu
@@ -11,8 +18,6 @@ Steps
 - Torch'un cpu ile çalıştığı tespit edildi. Torch, torchvision ve torchaudio kaldırıldı ve pytorch'un sitesinden tekrar pip ile kurulumu yapıldı. Gpu çalışması aktif edildi.
 - save_plate ve take_snapshot metodları eklendi. Threading kullanılarak tespit edilen plate'lerin her 3 saniyede bir detection klasörüne kayıt edilmesi sağlandı. Threading.Timer methodu kullanıldı.
 - Görselden text çıkarmak için alternatiflere bakıldı. Görüntü işleme ile her bir karakter için tespit yapılabilir. Ek olarak paddleocr yada openalpr gibi kaynaklardan yararlanılarak yüksek accuracy çıkarılabilir.
-
-
 
 Github Links
 ------------
@@ -34,3 +39,6 @@ Helpful Links
 - https://www.youtube.com/watch?v=6xklN4iiA0Q&ab_channel=Edgecate -> Plakaların belirli sürelerde nasıl kayıt edileceği ve open alpr gibi faydalı içeriklerin bulunduğu video.
 - https://www.youtube.com/watch?v=BpXlQwcx67s&ab_channel=coderzero
 - https://www.youtube.com/watch?v=i_30im3FlCs&ab_channel=TechieCoder
+- https://www.youtube.com/watch?v=oyqNdcbKhew&ab_channel=RobMulla -> tesseract, easyocr ve keras_ocr karşılaştırması 
+- https://www.educba.com/keras-ocr/ -> keras_ocr 
+- https://medium.com/mlearning-ai/tesseract-vs-keras-ocr-vs-easyocr-ec8500b9455b -> keras_ocr, easyocr ve tesseract arasındaki karşılaştırma için başka bir bağlantı
