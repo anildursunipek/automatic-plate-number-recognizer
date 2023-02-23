@@ -4,20 +4,22 @@ import cv2
 import numpy as np
 from datetime import datetime
 import time
+import keras_ocr
 
 class PlateFinder(threading.Thread):  
   """
+  This class
   """
-  def __init__(self, threadName: str, video_source):
+  def __init__(self, threadName: str, video_source, video_out = None):
     threading.Thread.__init__(self) 
     self.video_source = video_source
-    self.video_out = None
     self.threadName = threadName
     print("[INFO] Loading Model. . .")
     self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
     self.model.conf = 0.50 # NMS confidence threshold
     self.model.iou = 0.50 # NMS IoU threshold
-    threading.Timer(5.0, self.take_snapshot).start()
+    threading.Timer(15.0, self.take_snapshot).start()
+    self.pipeline = keras_ocr.pipeline.Pipeline()
     
   def run(self):
     """
@@ -76,6 +78,7 @@ class PlateFinder(threading.Thread):
           
         # Show Frame
         cv2.imshow('Video Out', np.squeeze(resultFrame.render()))
+
         if self.video_out is not None:
           print(f"[INFO] Saving output video. . .")
           frame_Output.write(resultFrame)
@@ -106,12 +109,27 @@ class PlateFinder(threading.Thread):
         x_min, y_min, x_max, y_max = int(cordinates[plateIndex][0]), int(cordinates[plateIndex][1]), int(cordinates[plateIndex][2]), int(cordinates[plateIndex][3])
         plateFrame = frame[y_min+5:y_max+5, x_min+5:x_max+5]  
 
-        if plateFrame.shape[0] > self.frame_height/12 and plateFrame.shape[1] > self.frame_width/8:
+        if plateFrame.shape[0] > self.frame_height/15 and plateFrame.shape[1] > self.frame_width/12:
           self.now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
           obj_filename = f'''{self.now}-{self.idx}'''
           obj_path = f'''./detected/{obj_filename}.png'''
-          cv2.imwrite(f'''{obj_path}''', plateFrame)
-          self.image_to_text(obj_path)
+          #cv2.imwrite(f'''{obj_path}''', plateFrame)
+          text = self.text_detection(plateFrame)
+          self.save_to_database(text)
+
+  def text_detection(self, plateFrame):
+    result = self.pipeline.recognize([plateFrame])
+    temp_arr = []
+    for idx in result[0]:
+      temp_arr.append(idx[1][0][0])
+      text = ""
+    for idx in range(len(temp_arr)):
+      text += f"{result[0][temp_arr.index(np.min(temp_arr))][0]}"
+      temp_arr[temp_arr.index(np.min(temp_arr))] += 50000
+    return text
+
+  def save_to_database(self, text):
+    print(text)
 
   def take_snapshot(self):
     """
@@ -121,17 +139,9 @@ class PlateFinder(threading.Thread):
     """
     print("Take snapshot init")
     self.save_plate(frame, labels, cordinates, True)
-    thread = threading.Timer(1.0, self.take_snapshot)
+    thread = threading.Timer(3.0, self.take_snapshot)
     thread.daemon = True
     thread.start()
-  
-  def image_to_text(self, plate_image_path:str):
-    """
-    Function description
-    ...
-    returns(void)
-    """
-    print("Image to text init")
 
   def detection(self, frame, model):
     """ 
@@ -161,14 +171,8 @@ class PlateFinder(threading.Thread):
     labels, cordinates = result.xyxy[0][:,-1], result.xyxy[0][:,:-2]
     return result, labels, cordinates
 
-
 if __name__ == '__main__':
   # Test Code
-  thread = PlateFinder("Thread - 1", 0)
+  thread = PlateFinder("Thread - 1",video_source=0,video_out=None)
   thread.start()
   thread.join()
-
-
-
-
-  
