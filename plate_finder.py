@@ -3,8 +3,10 @@ import torch
 import cv2
 import numpy as np
 from datetime import datetime
-import time
 import keras_ocr
+import database
+
+
 
 class PlateFinder(threading.Thread):  
   """
@@ -12,8 +14,8 @@ class PlateFinder(threading.Thread):
   """
   def __init__(self, threadName: str, video_source, video_out = None):
     threading.Thread.__init__(self) 
-    self.video_source = video_source
     self.threadName = threadName
+    self.video_source = video_source
     self.video_out = video_out
     print("[INFO] Loading Model. . .")
     self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
@@ -21,6 +23,7 @@ class PlateFinder(threading.Thread):
     self.model.iou = 0.50 # NMS IoU threshold
     threading.Timer(15.0, self.take_snapshot).start()
     self.pipeline = keras_ocr.pipeline.Pipeline()
+    self.database = database.SaveMongoDb("mongodb://localhost:27017")
     
   def run(self):
     """
@@ -53,6 +56,7 @@ class PlateFinder(threading.Thread):
     global frame
     global labels
     global cordinates
+    global text
     if torch.cuda.is_available():
       device = torch.device(0)
       self.model.to(device)
@@ -129,9 +133,6 @@ class PlateFinder(threading.Thread):
       temp_arr[temp_arr.index(np.min(temp_arr))] += 50000
     return text
 
-  def save_to_database(self, text):
-    print(text)
-
   def take_snapshot(self):
     """
     Function description
@@ -140,7 +141,13 @@ class PlateFinder(threading.Thread):
     """
     print("Take snapshot init")
     self.save_plate(frame, labels, cordinates, True)
-    thread = threading.Timer(3.0, self.take_snapshot)
+    thread = threading.Timer(5.0, self.take_snapshot)
+    thread.daemon = True
+    thread.start()
+
+  def save_to_database(self, text):
+    #print(text)
+    thread = threading.Thread(target=self.database.save_to_database, args=(text,))
     thread.daemon = True
     thread.start()
 
