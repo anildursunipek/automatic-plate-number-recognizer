@@ -2,22 +2,6 @@
 -----------------------------------
 Setup
 -----
-- pip install -qr requirements.txt 
-- Tensorflow gpu kurulumu
-- keras-ocr kurulumu
-- Keras için tensorflow=>2 ve üstü sürümler kullanılabilir
-
-Steps
------
-- Yeni python env oluşturuldu
-- Yolov5 modeli implement edildi
-- Yolov5 requirements.txt içerisindeki kütüphaneler pip ile mevcut python ortamına yüklendi
-- pip install -qr requirements.txt 
-- plateFinder.py içerisinde PlateFinder class'ı oluşturuldu ve threading kütüphanesi içerisinden threading.Thread class'ı miras bırakılarak yeni bir class oluşturuldu.
-- PlateFinder class'ının içerisinde startDetection ve detection method'ları eklendi.
-- Torch'un cpu ile çalıştığı tespit edildi. Torch, torchvision ve torchaudio kaldırıldı ve pytorch'un sitesinden tekrar pip ile kurulumu yapıldı. Gpu çalışması aktif edildi.
-- save_plate ve take_snapshot metodları eklendi. Threading kullanılarak tespit edilen plate'lerin her 3 saniyede bir detection klasörüne kayıt edilmesi sağlandı. Threading.Timer methodu kullanıldı.
-- Görselden text çıkarmak için alternatiflere bakıldı. Görüntü işleme ile her bir karakter için tespit yapılabilir. Ek olarak paddleocr yada openalpr gibi kaynaklardan yararlanılarak yüksek accuracy çıkarılabilir.
 
 Github Links
 ------------
