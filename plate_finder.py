@@ -4,8 +4,7 @@ import cv2
 import numpy as np
 from datetime import datetime
 import keras_ocr
-import database
-
+from database import MongoDB
 
 
 class PlateFinder(threading.Thread):  
@@ -21,9 +20,9 @@ class PlateFinder(threading.Thread):
     self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
     self.model.conf = 0.50 # NMS confidence threshold
     self.model.iou = 0.50 # NMS IoU threshold
-    threading.Timer(15.0, self.take_snapshot).start()
+    threading.Timer(10.0, self.take_snapshot).start()
     self.pipeline = keras_ocr.pipeline.Pipeline()
-    self.database = database.SaveMongoDb("mongodb://localhost:27017")
+    self.mongodb = MongoDB("mongodb://localhost:27017")
     
   def run(self):
     """
@@ -83,7 +82,6 @@ class PlateFinder(threading.Thread):
           
         # Show Frame
         cv2.imshow('Video Out', np.squeeze(resultFrame.render()))
-
         if self.video_out is not None:
           print(f"[INFO] Saving output video. . .")
           frame_Output.write(resultFrame)
@@ -119,8 +117,9 @@ class PlateFinder(threading.Thread):
           obj_filename = f'''{self.now}-{self.idx}'''
           obj_path = f'''./detected/{obj_filename}.png'''
           #cv2.imwrite(f'''{obj_path}''', plateFrame)
+          print("Number of active threads:", threading.active_count())
           text = self.text_detection(plateFrame)
-          self.save_to_database(text)
+          self.save(text)
 
   def text_detection(self, plateFrame):
     result = self.pipeline.recognize([plateFrame])
@@ -145,9 +144,9 @@ class PlateFinder(threading.Thread):
     thread.daemon = True
     thread.start()
 
-  def save_to_database(self, text):
+  def save(self, text):
     #print(text)
-    thread = threading.Thread(target=self.database.save_to_database, args=(text,))
+    thread = threading.Thread(target=self.mongodb.save, args=(text,))
     thread.daemon = True
     thread.start()
 
