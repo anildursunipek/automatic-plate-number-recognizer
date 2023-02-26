@@ -77,16 +77,6 @@ class PlateFinder(threading.Thread):
   def detection(self, frame):
     """ 
     Function description
-    ...
-    Parameters:
-      result:
-      labels:
-      cordinates:
-
-    Returns:
-      result:
-      labels:
-      cordinates:
 
     Example
     -------
@@ -103,19 +93,11 @@ class PlateFinder(threading.Thread):
     return result, labels, cordinates
   
   def start_detection(self):
-    """
-    Function description
-    
-    Parameters:
-      video_source(int):
-      video_out(string):
-    
-    Returns(void)
-    """
     global frame
     global labels
     global cordinates
     global text
+    
     if torch.cuda.is_available():
       device = torch.device(0)
       self.model.to(device)
@@ -137,7 +119,7 @@ class PlateFinder(threading.Thread):
       succes, frame = cap.read()
       if succes:
         cv2_im = frame
-        resultFrame, labels, cordinates = self.detection(cv2_im, self.model)
+        resultFrame, labels, cordinates = self.detection(cv2_im)
         #self.save_plate(frame, labels,cordinates, False)
           
         # Show Frame
@@ -157,16 +139,6 @@ class PlateFinder(threading.Thread):
     cv2.destroyAllWindows()
 
   def save_plate(self, frame, labels, cordinates, take_photo):
-    """
-    Function description
-
-    Parameters:
-      labels:
-      cordinates:
-      take_photo:
-
-    returns(void)
-    """
     if take_photo and len(labels) != 0:
       for self.idx, plateIndex in enumerate(range(len(labels))):
         x_min, y_min, x_max, y_max = int(cordinates[plateIndex][0]), int(cordinates[plateIndex][1]), int(cordinates[plateIndex][2]), int(cordinates[plateIndex][3])
@@ -176,17 +148,12 @@ class PlateFinder(threading.Thread):
           self.now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
           obj_filename = f'''{self.now}-{self.idx}'''
           obj_path = f'''./detected/{obj_filename}.png'''
-          #cv2.imwrite(f'''{obj_path}''', plateFrame)
+          cv2.imwrite(f'''{obj_path}''', plateFrame)
           print("Number of active threads:", threading.active_count())
           text = self.plateReader.read(plateFrame)
           self.save(text)
 
   def take_snapshot(self):
-    """
-    Function description
-    ...
-    returns(void)
-    """
     print("Take snapshot init")
     self.save_plate(frame, labels, cordinates, True)
     thread = threading.Timer(4.0, self.take_snapshot)
