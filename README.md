@@ -45,8 +45,10 @@ Github Links
 - Yolov5 github -> https://github.com/ultralytics/yolov5
 - https://github.com/ultralytics/yolov5/issues/36
 - Openalpr için github linkleri -> https://github.com/openalpr/openalpr | https://github.com/peters/openalpr-windows 
-
+- https://github.com/nicknochnack/RealTimeAutomaticNumberPlateRecognition/blob/main/Automatic%20Number%20Plate%20Detection.ipynb
+- https://github.com/deepakat002/numberplaterecognition
 Plate Dataset
+- https://github.com/edgecate/ANAL
 -------------
 - Kaggle -> https://www.kaggle.com/datasets/andrewmvd/car-plate-detection?select=images
 - Roboflow -> https://universe.roboflow.com/school-0bhfs/plate-number-recognition-dcqwk/dataset/1
