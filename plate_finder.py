@@ -48,12 +48,19 @@ class PlateFinder(threading.Thread):
     self.video_source = video_source
     self.video_out = video_out
     print("[INFO] Loading Model. . .")
-    self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
-    self.model.conf = 0.58 # NMS confidence threshold
-    self.model.iou = 0.48 # NMS IoU threshold
+    try:
+      self.model = self.load_model(yolov5Path= "yolov5", customWeightsPath= "yolov5/best.pt")
+      self.model.conf = 0.5 # NMS confidence threshold
+      self.model.iou = 0.4 # NMS IoU threshold
+    except Exception as err:
+      raise Exception(f"[ERROR INFO] Failed to initialize YOLOV5... {err}")
     threading.Timer(40.0, self.take_snapshot).start()
-    self.plateReader = PlateReader()
-    self.mongodb = MongoDB("mongodb://localhost:27017")
+    try:
+      self.plateReader = PlateReader()
+      self.mongodb = MongoDB("mongodb://localhost:27017")
+    except Exception as err:
+      raise Exception(f"[ERROR INFO] Failed to initialize OCR Model... {err}")
+
     
   def run(self):
     """
@@ -152,15 +159,13 @@ class PlateFinder(threading.Thread):
           obj_path = f'''./detected/{obj_filename}.png'''
           cv2.imwrite(f'''{obj_path}''', plateFrame)
           print("Number of active threads:", threading.active_count())
-          print(plateFrame.shape)
-          if plateFrame.shape[1] < 250 :
-            plateFrame = cv2.resize(plateFrame, None, fx = 1.8, fy = 1.8, interpolation = cv2.INTER_CUBIC)
-          if plateFrame.shape[1] < 350 : 
-            plateFrame = cv2.resize(plateFrame, None, fx = 1.4, fy = 1.4, interpolation = cv2.INTER_CUBIC)
-          text = self.plateReader.read_keras_ocr(plateFrame, text)
-          print(text)
-          text2 = self.plateReader.read_tesseract(plateFrame, text)
-          print(text2)
+          try:
+            text = self.plateReader.read_keras_ocr(plateFrame, text)
+            print(text)
+            text2 = self.plateReader.read_tesseract(plateFrame, text)
+            print(text2)
+          except:
+            print("[INFO] Text can not be read...")
           #if text != "":
           #  self.save(text)
 
@@ -172,8 +177,11 @@ class PlateFinder(threading.Thread):
       thread.daemon = True
       thread.start()
     except:
+      thread = threading.Timer(4.0, self.take_snapshot)
+      thread.daemon = True
+      thread.start()
       print("[ERROR INFO] Frame can not be read...")
-      
+
   def save(self, text):
     print(text)
     thread = threading.Thread(target=self.mongodb.save, args=(text,))
@@ -182,6 +190,6 @@ class PlateFinder(threading.Thread):
 
 if __name__ == '__main__':
   # Test Code
-  thread = PlateFinder("Thread - 1", video_source=1, video_out=None)
+  thread = PlateFinder("Thread - 1", video_source=0, video_out=None)
   thread.start()
   thread.join()
